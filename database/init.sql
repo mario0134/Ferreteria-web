@@ -1,0 +1,48 @@
+﻿CREATE TABLE IF NOT EXISTS categories (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  id SERIAL PRIMARY KEY,
+  code VARCHAR(40) NOT NULL UNIQUE,
+  name VARCHAR(150) NOT NULL,
+  description TEXT,
+  category_id INTEGER NOT NULL REFERENCES categories(id),
+  purchase_price NUMERIC(12, 2) NOT NULL CHECK (purchase_price >= 0),
+  sale_price NUMERIC(12, 2) NOT NULL CHECK (sale_price >= 0),
+  stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
+  min_stock INTEGER NOT NULL DEFAULT 5 CHECK (min_stock >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS sales (
+  id SERIAL PRIMARY KEY,
+  sale_code VARCHAR(30) NOT NULL UNIQUE,
+  subtotal NUMERIC(12, 2) NOT NULL CHECK (subtotal >= 0),
+  total NUMERIC(12, 2) NOT NULL CHECK (total >= 0),
+  status VARCHAR(20) NOT NULL DEFAULT 'COMPLETED',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS sale_items (
+  id SERIAL PRIMARY KEY,
+  sale_id INTEGER NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  quantity INTEGER NOT NULL CHECK (quantity > 0),
+  unit_price NUMERIC(12, 2) NOT NULL CHECK (unit_price >= 0),
+  line_total NUMERIC(12, 2) NOT NULL CHECK (line_total >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS inventory_movements (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  movement_type VARCHAR(20) NOT NULL,
+  quantity INTEGER NOT NULL CHECK (quantity > 0),
+  reference VARCHAR(120),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
